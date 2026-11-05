@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Викторина</title>
+<style>
+  body { margin: 0; background: #f8f6f1; }
+  body:has(#quiz-stage[data-theme="dark"]) { background: #1d1f1c; }
+</style>
+<!-- preview:start -->
+<div id="quiz-stage">
+  <style>
+    @font-face {
+      font-family: Manrope;
+      font-style: normal;
+      font-weight: 400 750;
+      font-display: swap;
+      src: url("assets/fonts/manrope-cyrillic.woff2") format("woff2");
+      unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+    }
+    @font-face {
+      font-family: Manrope;
+      font-style: normal;
+      font-weight: 400 750;
+      font-display: swap;
+      src: url("assets/fonts/manrope-latin.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    #quiz-stage {
+      --stage: #f8f6f1;
+      --field: #fefcf8;
+      --ink: #232521;
+      --muted: #62645c;
+      --line: #cdcdc3;
+      --soft: #eeece4;
+      --signal: #9b342e;
+      --signal-soft: #f6e5e1;
+      --positive: #235e46;
+      --positive-soft: #e1eee4;
+      --action: #272a25;
+      --action-text: #fcfaf4;
+      --play-action: #e8e5dd;
+      --play-action-text: #34352f;
+      --play-action-line: #d4cfc3;
+      --answer-radius: 10px;
+      color-scheme: light;
+      color: var(--ink);
+      font: 16px/1.45 Manrope, system-ui, sans-serif;
+      overflow-wrap: anywhere;
+    }
+    #quiz-stage[data-theme="dark"] {
+      --stage: #1d1f1c;
+      --field: #242622;
+      --ink: #f4f1e8;
+      --muted: #b7b9ad;
+      --line: #50534a;
+      --soft: #30332c;
+      --signal: #ffa398;
+      --signal-soft: #482c28;
+      --positive: #a6d6b7;
+      --positive-soft: #263e32;
+      --action: #efece1;
+      --action-text: #22241f;
+      --play-action: #34362f;
+      --play-action-text: #e9e6dc;
+      --play-action-line: #4e5047;
+      color-scheme: dark;
+    }
+
+    #quiz-stage * { box-sizing: border-box; }
+    #quiz-stage [hidden] { display: none !important; }
+    #quiz-stage :is(h1, h2, p) { margin: 0; font-family: inherit; }
+    #quiz-stage :is(button, input, select, textarea) { font: inherit; }
+    #quiz-stage :is(button, input, select, textarea):focus-visible {
+      outline: 2px solid var(--signal);
+      outline-offset: 3px;
+    }
+    #quiz-stage button {
+      min-block-size: 44px;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      touch-action: manipulation;
+    }
+    #quiz-stage button.primary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-block-size: 50px;
+      padding: 10px 15px;
+      border-radius: 3px;
+      background: var(--action);
+      color: var(--action-text);
+      text-align: left;
+      font-weight: 700;
+    }
+    #quiz-stage button.primary::after { content: '→' / ''; font-size: 1.2em; line-height: 1; }
+    #quiz-stage button.primary:disabled { opacity: .45; }
+    #quiz-stage button.primary:not(:disabled):active { opacity: .82; }
+    #quiz-stage .shell {
+      --gutter: clamp(16px, 4.4vw, 46px);
+      --safe-top: max(env(safe-area-inset-top, 0px), calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)));
+      --safe-right: max(env(safe-area-inset-right, 0px), calc(var(--tg-safe-area-inset-right, 0px) + var(--tg-content-safe-area-inset-right, 0px)));
+      --safe-bottom: max(env(safe-area-inset-bottom, 0px), calc(var(--tg-safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px)));
+      --safe-left: max(env(safe-area-inset-left, 0px), calc(var(--tg-safe-area-inset-left, 0px) + var(--tg-content-safe-area-inset-left, 0px)));
+      max-inline-size: 1040px;
+      margin-inline: auto;
+      padding: calc(10px + var(--safe-top)) calc(var(--gutter) + var(--safe-right))
+        calc(clamp(16px, 3vw, 30px) + var(--safe-bottom)) calc(var(--gutter) + var(--safe-left));
+      background: var(--stage);
+    }
+    #quiz-stage header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-block-size: 50px;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    #quiz-stage header button {
+      flex: none;
+      margin-inline-start: auto;
+      color: var(--muted);
+      font-size: .8125rem;
+      font-weight: 700;
+    }
+    #quiz-stage header button:active, #quiz-stage .quiet:active { color: var(--signal); }
+    #quiz-stage .eyebrow {
+      color: var(--muted);
+      font-size: .6875rem;
+      font-weight: 750;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    #quiz-stage .clock-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding-top: 16px;
+    }
+    #quiz-stage .clock-track {
+      padding-bottom: 6px;
+      background: repeating-linear-gradient(to right, var(--muted) 0 1px, transparent 1px calc(100% / 6))
+        left bottom / 100% 4px no-repeat;
+      border-inline-end: 1px solid var(--muted);
+    }
+    #quiz-stage .time {
+      color: var(--muted);
+      font-size: 1.125rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    #quiz-stage[data-phase="answer"] .time, #quiz-stage .time.urgent { color: var(--signal); }
+    #quiz-stage progress {
+      display: block;
+      appearance: none;
+      inline-size: 100%;
+      block-size: 3px;
+      margin: 0;
+      border: 0;
+      background: var(--line);
+    }
+    #quiz-stage progress::-webkit-progress-bar { background: var(--line); }
+    #quiz-stage progress::-webkit-progress-value { background: var(--muted); }
+    #quiz-stage progress::-moz-progress-bar { background: var(--muted); }
+    #quiz-stage progress.urgent::-webkit-progress-value { background: var(--signal); }
+    #quiz-stage progress.urgent::-moz-progress-bar { background: var(--signal); }
+    #quiz-stage .question { padding-block: clamp(24px, 5vw, 54px) clamp(24px, 4vw, 42px); }
+    #quiz-stage h1 {
+      max-inline-size: 30ch;
+      color: var(--ink);
+      font-size: clamp(1.75rem, 5.8vw, 3.5rem);
+      font-weight: 650;
+      line-height: 1.08;
+      letter-spacing: -.048em;
+      text-wrap: balance;
+    }
+    #quiz-stage h2 { color: var(--ink); font-size: 1rem; font-weight: 750; }
+    #quiz-stage .answers {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(8px, 1.2vw, 12px);
+    }
+    #quiz-stage .answers:empty { display: none; }
+    #quiz-stage button.answer {
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 1.2vw, 12px);
+      min-block-size: clamp(52px, 7vw, 60px);
+      padding: 9px clamp(10px, 1.6vw, 16px);
+      border: 1px solid var(--line);
+      border-radius: var(--answer-radius);
+      background: var(--field);
+      text-align: left;
+    }
+    #quiz-stage .answer:focus-visible { position: relative; z-index: 1; outline-offset: -3px; }
+    #quiz-stage .letter {
+      color: var(--muted);
+      font-size: .6875rem;
+      font-weight: 750;
+      letter-spacing: .09em;
+    }
+    #quiz-stage .answer-text {
+      flex: 1;
+      min-inline-size: 0;
+      font-size: clamp(.9375rem, 2vw, 1.125rem);
+      font-weight: 650;
+      line-height: 1.22;
+    }
+    #quiz-stage .answer-mark { font-size: .875rem; line-height: 1; }
+    #quiz-stage .answer-mark:empty { display: none; }
+    #quiz-stage .answer[data-removed] .answer-text { visibility: hidden; }
+    #quiz-stage .answer[data-removed] { background: var(--stage); }
+    #quiz-stage .answer:not(:disabled):active { background: var(--soft); }
+    #quiz-stage button.answer.correct { color: var(--positive); background: var(--positive-soft); }
+    #quiz-stage button.answer.wrong { color: var(--signal); background: var(--signal-soft); }
+    #quiz-stage .answer:is(.correct, .wrong) .letter { color: inherit; }
+    #quiz-stage .controls {
+      display: grid;
+      align-items: center;
+      gap: 8px 20px;
+      margin-top: 14px;
+    }
+    #quiz-stage .round-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    #quiz-stage .round-tools { padding-top: 8px; }
+    #quiz-stage .round-tools p, #quiz-stage #quiz-hint { color: var(--muted); font-size: .8125rem; }
+    #quiz-stage .lifelines {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      max-inline-size: 330px;
+      margin-top: 10px;
+    }
+    #quiz-stage .lifelines button, #quiz-stage #quiz-bank {
+      padding-inline: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--answer-radius);
+      font-size: .8125rem;
+      font-weight: 700;
+    }
+    #quiz-stage .lifelines button:disabled { opacity: .5; }
+    #quiz-stage .lifelines button {
+      display: grid;
+      align-content: start;
+      gap: 3px;
+      padding: 8px;
+      text-align: left;
+      line-height: 1.2;
+    }
+    #quiz-stage .lifelines small {
+      color: var(--muted);
+      font-size: .6875rem;
+      font-weight: 550;
+    }
+    #quiz-stage .lifelines button[data-used] span { text-decoration: line-through; }
+    #quiz-stage .live-ladder { display: none; }
+    #quiz-stage #quiz-hint { margin-top: 8px; }
+    #quiz-stage #quiz-hint:empty { position: absolute; }
+    #quiz-stage dialog {
+      inline-size: min(340px, calc(100% - 32px));
+      max-block-size: 80dvh;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--answer-radius);
+      background: var(--stage);
+      color: var(--ink);
+    }
+    #quiz-stage dialog::backdrop { background: #12131088; }
+    #quiz-stage .ladder-head, #quiz-stage .ladder li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    #quiz-stage .ladder { padding: 0; margin: 0; list-style: none; font-variant-numeric: tabular-nums; font-size: .875rem; }
+    #quiz-stage .ladder li { padding: 5px 8px; }
+    #quiz-stage .ladder [aria-current] { background: var(--soft); font-weight: 750; }
+    #quiz-stage .ladder [data-secured] { color: var(--positive); }
+    #quiz-stage .ladder small { margin-inline-end: auto; color: var(--muted); }
+    #quiz-stage #quiz-status {
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 550;
+    }
+    #quiz-stage #quiz-status:empty, #quiz-stage #quiz-editor-status:empty { position: absolute; }
+    #quiz-stage #quiz-status[data-outcome="success"] { color: var(--positive); }
+    #quiz-stage #quiz-status[data-outcome="error"] { color: var(--signal); }
+    #quiz-stage #quiz-action {
+      border: 1px solid var(--play-action-line);
+      border-radius: var(--answer-radius);
+      background: var(--play-action);
+      color: var(--play-action-text);
+    }
+    #quiz-stage .check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-block-size: 44px;
+      color: var(--muted);
+      font-size: .8125rem;
+      font-weight: 650;
+    }
+    #quiz-stage input[type="checkbox"] { accent-color: var(--action); margin: 0; }
+    #quiz-stage[data-phase="done"] .question { padding-block: clamp(26px, 6vw, 64px) 10px; }
+    #quiz-stage[data-phase="done"] h1 { font-size: clamp(3.15rem, 10vw, 6rem); font-variant-numeric: tabular-nums; }
+
+    #quiz-stage .editor { padding-top: 16px; }
+    #quiz-stage .editor-grid, #quiz-stage form { display: grid; gap: 14px; min-inline-size: 0; }
+    #quiz-stage .editor-picker {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    #quiz-stage label.field {
+      display: grid;
+      min-inline-size: 0;
+      gap: 5px;
+      color: var(--muted);
+      font-size: .8125rem;
+      font-weight: 700;
+    }
+    #quiz-stage :is(input:not([type="checkbox"], [type="radio"]), select, textarea) {
+      inline-size: 100%;
+      min-inline-size: 0;
+      min-block-size: 44px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--field);
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 550;
+      scroll-margin-block: 16px;
+    }
+    #quiz-stage select { text-overflow: ellipsis; }
+    #quiz-stage select:disabled { opacity: .65; }
+    #quiz-stage textarea { resize: vertical; }
+    #quiz-stage .editor-answers {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) 54px;
+      align-items: center;
+      gap: 8px;
+    }
+    #quiz-stage .editor-answers h2 {
+      grid-column: 1 / 3;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+    #quiz-stage .correct-column { color: var(--muted); font-size: .75rem; text-align: center; }
+    #quiz-stage .correct-option {
+      display: grid;
+      place-items: center;
+      min-block-size: 44px;
+    }
+    #quiz-stage input[type="radio"] { accent-color: var(--action); margin: 0; }
+    #quiz-stage .editor-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px; }
+    #quiz-stage .quiet { color: var(--muted); font-size: .8125rem; font-weight: 750; padding-inline: 8px; }
+    #quiz-stage .quiet.danger, #quiz-stage #quiz-editor-status[data-error] { color: var(--signal); }
+    #quiz-stage #quiz-editor-status { color: var(--muted); font-size: .8125rem; }
+
+    @media (min-width: 560px) {
+      #quiz-stage .controls { display: flex; flex-wrap: wrap; }
+      #quiz-stage #quiz-action { margin-inline-start: auto; min-inline-size: 156px; }
+      #quiz-stage .editor-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr); gap: clamp(22px, 4vw, 42px); }
+      #quiz-stage .editor-picker { align-content: start; align-items: start; grid-template-columns: minmax(0, 1fr); border-bottom: 0; }
+      #quiz-stage .editor-picker button { justify-self: start; }
+    }
+    @media (min-width: 760px) {
+      #quiz-stage:is([data-phase="speaking"], [data-phase="answer"], [data-phase="review"]) .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 210px;
+        column-gap: clamp(18px, 3vw, 32px);
+        align-content: start;
+      }
+      #quiz-stage .stage > :not(.game-sidebar) { grid-column: 1; }
+      #quiz-stage .game-sidebar {
+        grid-column: 2;
+        grid-row: 1 / span 6;
+        padding-inline-start: 14px;
+        border-inline-start: 1px solid var(--line);
+      }
+      #quiz-stage .game-sidebar .lifelines {
+        grid-template-columns: 1fr;
+        margin: 8px 0 14px;
+        gap: 5px;
+      }
+      #quiz-stage .game-sidebar .lifelines button { padding-inline: 9px; }
+      #quiz-stage .live-ladder { display: block; }
+      #quiz-stage .live-ladder h2 { padding-inline: 8px; margin-bottom: 4px; font-size: .8125rem; }
+      #quiz-stage #quiz-show-ladder { display: none; }
+    }
+    @media (max-width: 559px) and (orientation: portrait) {
+      #quiz-stage[data-telegram] .shell:has(.stage:not([hidden])) {
+        display: flex;
+        flex-direction: column;
+        min-block-size: var(--tg-viewport-stable-height, 100dvh);
+      }
+      #quiz-stage[data-telegram] .stage:not([hidden]) { display: flex; flex: 1; flex-direction: column; }
+      #quiz-stage[data-telegram] .question { display: grid; align-content: center; flex: 1; }
+    }
+    @media (hover: hover) {
+      #quiz-stage .answer:not(:disabled):hover { background: var(--soft); }
+      #quiz-stage :is(header button, .quiet):hover { color: var(--ink); }
+      #quiz-stage .quiet.danger:hover { color: var(--signal); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      #quiz-stage .answer { transition: background-color 130ms ease, color 130ms ease; }
+    }
+  </style>
+
+  <div class="shell">
+    <header>
+      <p class="eyebrow" id="quiz-counter"></p>
+      <h2 id="quiz-editor-title" hidden>Вопросы</h2>
+      <button id="quiz-edit" type="button">Редактор</button>
+    </header>
+
+    <main class="stage" id="quiz-game">
+      <div class="round-tools" id="quiz-round-tools" hidden>
+        <p id="quiz-stakes"></p>
+        <button class="quiet" id="quiz-show-ladder" type="button">Все суммы</button>
+      </div>
+      <div class="clock-row" id="quiz-clock">
+        <div class="clock-track">
+          <progress id="quiz-progress" max="60" value="60" aria-label="Оставшееся время"></progress>
+        </div>
+        <span class="time" id="quiz-time" role="timer" aria-label="Оставшееся время">1:00</span>
+      </div>
+      <div class="question"><h1 id="quiz-question" tabindex="-1"></h1></div>
+      <div class="answers" id="quiz-answers"></div>
+      <aside class="game-sidebar" id="quiz-sidebar" aria-label="Подсказки и суммы за ответы" hidden>
+        <div class="lifelines" id="quiz-lifelines" aria-label="Подсказки" role="group">
+          <button type="button" data-hint="half">
+            <span>50:50</span>
+            <small>Убирает два неверных ответа</small>
+          </button>
+          <button type="button" data-hint="audience">
+            <span>Помощь зала</span>
+            <small>Виртуальное голосование в процентах</small>
+          </button>
+          <button type="button" data-hint="friend">
+            <span>Звонок другу</span>
+            <small>Совет виртуального друга</small>
+          </button>
+        </div>
+        <div class="live-ladder">
+          <h2 id="quiz-live-ladder-title">Сколько можно выиграть</h2>
+          <ol class="ladder" id="quiz-live-ladder" aria-labelledby="quiz-live-ladder-title" reversed></ol>
+        </div>
+      </aside>
+      <p id="quiz-hint" role="status"></p>
+      <div class="controls">
+        <p id="quiz-status" role="status"></p>
+        <label class="check" id="quiz-voice-option"><input id="quiz-voice" type="checkbox" checked> Озвучка</label>
+        <button id="quiz-bank" type="button" hidden></button>
+        <button id="quiz-action" class="primary" type="button">Начать игру</button>
+      </div>
+    </main>
+
+    <dialog id="quiz-ladder-dialog" aria-labelledby="quiz-ladder-title">
+      <div class="ladder-head">
+        <h2 id="quiz-ladder-title">Сколько можно выиграть</h2>
+        <button id="quiz-close-ladder" class="quiet" type="button">Закрыть</button>
+      </div>
+      <ol class="ladder" id="quiz-ladder" reversed></ol>
+    </dialog>
+
+    <section class="editor" id="quiz-editor" hidden aria-labelledby="quiz-editor-title">
+      <div class="editor-grid">
+        <div class="editor-picker">
+          <label class="field">Вопросы набора <select id="quiz-list"></select></label>
+          <button id="quiz-add" class="quiet" type="button">+ Добавить</button>
+        </div>
+        <form id="quiz-form">
+          <label class="field">Вопрос <textarea name="question" rows="2" maxlength="220" required></textarea></label>
+          <div class="editor-answers" role="group" aria-labelledby="quiz-options-label">
+            <h2 id="quiz-options-label">Варианты ответа</h2>
+            <span class="correct-column" aria-hidden="true">Верный</span>
+            <label class="letter" for="quiz-option-a" aria-hidden="true">A</label>
+            <input id="quiz-option-a" name="a" maxlength="120" aria-label="Вариант A" required>
+            <label class="correct-option"><input type="radio" name="correct" value="0" aria-label="Правильный ответ A" checked></label>
+            <label class="letter" for="quiz-option-b" aria-hidden="true">B</label>
+            <input id="quiz-option-b" name="b" maxlength="120" aria-label="Вариант B" required>
+            <label class="correct-option"><input type="radio" name="correct" value="1" aria-label="Правильный ответ B"></label>
+            <label class="letter" for="quiz-option-c" aria-hidden="true">C</label>
+            <input id="quiz-option-c" name="c" maxlength="120" aria-label="Вариант C" required>
+            <label class="correct-option"><input type="radio" name="correct" value="2" aria-label="Правильный ответ C"></label>
+            <label class="letter" for="quiz-option-d" aria-hidden="true">D</label>
+            <input id="quiz-option-d" name="d" maxlength="120" aria-label="Вариант D" required>
+            <label class="correct-option"><input type="radio" name="correct" value="3" aria-label="Правильный ответ D"></label>
+          </div>
+          <div class="editor-actions">
+            <button class="primary" type="submit">Сохранить</button>
+            <button id="quiz-delete" class="quiet danger" type="button">Удалить</button>
+          </div>
+          <p id="quiz-editor-status" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const root = document.getElementById('quiz-stage');
+    const find = (name) => root.querySelector('#quiz-' + name);
+    const game = find('game');
+    const editor = find('editor');
+    const editButton = find('edit');
+    const question = find('question');
+    const answers = find('answers');
+    const bank = find('bank');
+    const hint = find('hint');
+    const sidebar = find('sidebar');
+    const hintButtons = Array.from(find('lifelines').querySelectorAll('button'));
+    const ladderDialog = find('ladder-dialog');
+    const questionPicker = find('list');
+    const counter = find('counter');
+    const clock = find('time');
+    const clockRow = find('clock');
+    const progress = find('progress');
+    const form = find('form');
+    const status = find('status');
+    const editorStatus = find('editor-status');
+    const action = find('action');
+    const voice = find('voice');
+    const synth = window.speechSynthesis;
+    const storageKey = 'quiz-stage-questions-v1';
+    const letters = ['A', 'B', 'C', 'D'];
+    const prizes = [500, 1000, 2000, 3000, 5000, 10000, 15000, 25000, 50000, 100000, 200000, 400000, 800000, 1500000, 3000000];
+    const checkpoints = [5, 10];
+    const formatPrize = new Intl.NumberFormat('ru-RU');
+    const demo = [
+      { question: 'Какая планета Солнечной системы самая большая?', answers: ['Земля', 'Сатурн', 'Юпитер', 'Нептун'], correct: 2 },
+      { question: 'Какой химический элемент обозначают символом W?', answers: ['Вольфрам', 'Ванадий', 'Висмут', 'Водород'], correct: 0 },
+      { question: 'Какой пролив разделяет Европу и Африку?', answers: ['Берингов', 'Гибралтарский', 'Ормузский', 'Магелланов'], correct: 1 },
+      { question: 'Какой инструмент использует смычок?', answers: ['Арфа', 'Флейта', 'Труба', 'Виолончель'], correct: 3 },
+      { question: 'На каком материке находятся Анды?', answers: ['Южная Америка', 'Африка', 'Австралия', 'Евразия'], correct: 0 },
+      { question: 'Кто написал роман «Отцы и дети»?', answers: ['Лев Толстой', 'Иван Тургенев', 'Антон Чехов', 'Николай Гоголь'], correct: 1 },
+      { question: 'Как называется единица электрического сопротивления?', answers: ['Вольт', 'Ватт', 'Ампер', 'Ом'], correct: 3 },
+      { question: 'Кто написал картину «Ночной дозор»?', answers: ['Рубенс', 'Вермеер', 'Рембрандт', 'Ван Дейк'], correct: 2 },
+      { question: 'Какая страна граничит с Португалией по суше?', answers: ['Испания', 'Франция', 'Италия', 'Андорра'], correct: 0 },
+      { question: 'Какой композитор написал «Картинки с выставки»?', answers: ['Чайковский', 'Мусоргский', 'Римский-Корсаков', 'Бородин'], correct: 1 },
+      { question: 'Как называется самая крупная луна Нептуна?', answers: ['Титан', 'Тритон', 'Ганимед', 'Фобос'], correct: 1 },
+      { question: 'Как называлась столица империи инков?', answers: ['Теночтитлан', 'Тикаль', 'Куско', 'Чан-Чан'], correct: 2 },
+      { question: 'Какой химический элемент обозначают символом Sn?', answers: ['Сурьма', 'Селен', 'Олово', 'Свинец'], correct: 2 },
+      { question: 'Какое море не имеет сухопутных берегов?', answers: ['Коралловое', 'Карибское', 'Тасманово', 'Саргассово'], correct: 3 },
+      { question: 'Как называется линия, соединяющая точки равного магнитного склонения?', answers: ['Изобата', 'Изогона', 'Изотерма', 'Изохрона'], correct: 1 }
+    ];
+
+    function readQuestions() {
+      try {
+        const saved = window.openai?.widgetState?.privateContent?.questions
+          ?? JSON.parse(localStorage.getItem(storageKey));
+        if (Array.isArray(saved)) return saved;
+      } catch { /* The preview may deny browser storage. */ }
+      return demo;
+    }
+
+    let questions = readQuestions();
+    let editing = -1;
+    let index = 0;
+    let score = 0;
+    let roundLength = 0;
+    let roundEnded = false;
+    const usedHints = new Set();
+    let phase = 'ready';
+    let timer;
+    let deadline;
+    let speechTimeout;
+    let utterance;
+    let telegram;
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function setPhase(next) {
+      phase = next;
+      root.dataset.phase = next;
+      delete status.dataset.outcome;
+      sidebar.hidden = next === 'ready' || next === 'done';
+      bank.hidden = true;
+      updateHintButtons();
+    }
+
+    function updateHintButtons() {
+      for (const button of hintButtons) {
+        const used = usedHints.has(button.dataset.hint);
+        button.disabled = phase !== 'answer' || used;
+        button.toggleAttribute('data-used', used);
+      }
+    }
+
+    function guaranteedPrize() {
+      const level = checkpoints.reduce((reached, checkpoint) => checkpoint <= score ? checkpoint : reached, 0);
+      return prizes[level - 1] ?? 0;
+    }
+
+    function renderStakes() {
+      const guaranteed = guaranteedPrize();
+      const stake = 'Вопрос на ' + formatPrize.format(prizes[index]);
+      find('stakes').textContent = guaranteed ? stake + ' · Уже гарантировано ' + formatPrize.format(guaranteed) : stake;
+      renderLadder(find('live-ladder'));
+    }
+
+    function renderLadder(list) {
+      const rows = prizes.slice(0, roundLength).map((prize, position) => {
+        const level = position + 1;
+        const row = document.createElement('li');
+        const label = document.createElement('span');
+        const marker = document.createElement('small');
+        const amount = document.createElement('span');
+        label.textContent = String(level);
+        marker.textContent = checkpoints.includes(level) ? 'Несгораемая' : '';
+        row.toggleAttribute('data-secured', checkpoints.includes(level) && level <= score);
+        amount.textContent = formatPrize.format(prize);
+        if (position === index) row.setAttribute('aria-current', 'step');
+        row.append(label, marker, amount);
+        return row;
+      }).reverse();
+      list.replaceChildren(...rows);
+    }
+
+    function showLadder() {
+      renderLadder(find('ladder'));
+      ladderDialog.showModal();
+    }
+
+    function useHint(type) {
+      if (phase !== 'answer' || usedHints.has(type)) return;
+      if (performance.now() >= deadline) {
+        finishQuestion(-1);
+        return;
+      }
+      usedHints.add(type);
+      updateHintButtons();
+      const correct = questions[index].correct;
+      const buttons = Array.from(answers.querySelectorAll('.answer'));
+      const available = buttons.map((button, position) => position).filter((position) => !buttons[position].disabled);
+      const wrong = available.filter((position) => position !== correct);
+      if (type === 'half') {
+        const kept = wrong[Math.floor(Math.random() * wrong.length)];
+        for (const position of wrong) {
+          if (position === kept) continue;
+          buttons[position].disabled = true;
+          buttons[position].dataset.removed = '';
+        }
+        hint.textContent = '50:50 · Осталось два варианта.';
+      } else if (type === 'audience') {
+        const weights = available.map((position) => 12 + Math.random() * (position === correct ? 70 : 30));
+        const total = weights.reduce((sum, weight) => sum + weight, 0);
+        const votes = weights.map((weight) => Math.floor(weight * 100 / total));
+        votes[weights.indexOf(Math.max(...weights))] += 100 - votes.reduce((sum, vote) => sum + vote, 0);
+        hint.textContent = 'Виртуальный зал · ' + available.map((position, i) => letters[position] + ' ' + votes[i] + '%').join(' · ');
+      } else {
+        const suggestion = Math.random() < .75 ? correct : wrong[Math.floor(Math.random() * wrong.length)];
+        hint.textContent = 'Виртуальный друг · «Я бы выбрал вариант ' + letters[suggestion] + '».';
+      }
+    }
+
+    function applyTheme() {
+      root.dataset.theme = telegram?.colorScheme ?? (systemTheme.matches ? 'dark' : 'light');
+      if (!telegram) return;
+      const background = getComputedStyle(root).getPropertyValue('--stage').trim();
+      telegram.setHeaderColor?.(telegram.isVersionAtLeast?.('6.9') ? background : 'bg_color');
+      if (telegram.isVersionAtLeast?.('6.1')) telegram.setBackgroundColor(background);
+      if (telegram.isVersionAtLeast?.('7.10')) telegram.setBottomBarColor(background);
+    }
+
+    function connectTelegram() {
+      const webApp = window.Telegram?.WebApp;
+      if (telegram || !webApp || (!webApp.initData && (!webApp.platform || webApp.platform === 'unknown'))) return;
+      telegram = webApp;
+      root.dataset.telegram = '';
+      applyTheme();
+      telegram.onEvent('themeChanged', applyTheme);
+      telegram.BackButton?.onClick(() => {
+        if (!editor.hidden) setEditorOpen(false);
+      });
+      if (!editor.hidden) telegram.BackButton?.show();
+      telegram.ready();
+      telegram.expand();
+    }
+
+    voice.disabled = !synth || !window.SpeechSynthesisUtterance;
+    if (voice.disabled) {
+      voice.checked = false;
+      find('voice-option').hidden = true;
+    }
+
+    function updateClock(seconds) {
+      clock.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+      clock.classList.toggle('urgent', seconds <= 10);
+      progress.classList.toggle('urgent', seconds <= 10);
+      progress.value = seconds;
+    }
+
+    function stopSpeech() {
+      clearTimeout(speechTimeout);
+      if (!utterance) return;
+      utterance.onend = null;
+      utterance.onerror = null;
+      utterance = null;
+      synth.cancel();
+    }
+
+    function stopRound() {
+      clearInterval(timer);
+      stopSpeech();
+    }
+
+    function renderQuestion() {
+      const item = questions[index];
+      const formatNumber = (number) => String(number).padStart(2, '0');
+      counter.textContent = 'Вопрос ' + formatNumber(index + 1) + ' / ' + formatNumber(roundLength);
+      clockRow.hidden = false;
+      find('round-tools').hidden = false;
+      renderStakes();
+      hint.textContent = '';
+      question.textContent = item.question;
+      answers.replaceChildren(...item.answers.map((answer, position) => {
+        const button = document.createElement('button');
+        const letter = document.createElement('span');
+        const mark = document.createElement('span');
+        const text = document.createElement('span');
+        letter.className = 'letter';
+        letter.textContent = letters[position];
+        mark.className = 'answer-mark';
+        mark.setAttribute('aria-hidden', 'true');
+        text.className = 'answer-text';
+        text.textContent = answer;
+        button.type = 'button';
+        button.className = 'answer';
+        button.disabled = true;
+        button.append(letter, text, mark);
+        button.addEventListener('click', () => finishQuestion(position));
+        return button;
+      }));
+      updateClock(60);
+    }
+
+    function showReady() {
+      stopRound();
+      roundLength = Math.min(questions.length, prizes.length);
+      roundEnded = false;
+      usedHints.clear();
+      setPhase('ready');
+      index = score = 0;
+      counter.textContent = 'Подготовка к игре';
+      clockRow.hidden = true;
+      find('round-tools').hidden = true;
+      hint.textContent = '';
+      question.textContent = roundLength ? 'Готовы сыграть?' : 'Добавьте первый вопрос';
+      answers.replaceChildren();
+      action.hidden = false;
+      action.disabled = roundLength === 0;
+      action.textContent = 'Начать игру';
+      find('voice-option').hidden = voice.disabled || !roundLength;
+      status.textContent = roundLength ? 'Вопросов: ' + roundLength + ' · Подсказок: 3' : 'Откройте редактор, чтобы начать.';
+    }
+
+    function startTimer(message = 'Выберите один ответ') {
+      stopSpeech();
+      const focusWasOnAction = document.activeElement === action;
+      setPhase('answer');
+      status.textContent = message;
+      action.hidden = true;
+      root.querySelectorAll('.answer').forEach((button) => { button.disabled = false; });
+      if (focusWasOnAction) question.focus({ preventScroll: true });
+      deadline = performance.now() + 60000;
+      timer = setInterval(() => {
+        const left = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
+        updateClock(left);
+        if (left === 0) finishQuestion(-1);
+      }, 150);
+    }
+
+    function playQuestion() {
+      renderQuestion();
+      find('voice-option').hidden = true;
+      if (!voice.checked) {
+        startTimer();
+        return;
+      }
+      const item = questions[index];
+      const russian = synth.getVoices().filter((entry) => /^ru(?:-|$)/i.test(entry.lang));
+      const selectedVoice = russian.find((entry) => entry.localService) ?? russian[0];
+      if (!selectedVoice) {
+        startTimer('Русский голос недоступен. Выберите ответ.');
+        return;
+      }
+      setPhase('speaking');
+      status.textContent = 'Звучит вопрос…';
+      action.hidden = false;
+      action.textContent = 'Пропустить озвучку';
+      const spoken = [item.question, ...item.answers].join('\n');
+      utterance = new SpeechSynthesisUtterance(spoken);
+      utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang;
+      utterance.rate = 0.93;
+      utterance.onend = () => startTimer();
+      utterance.onerror = () => startTimer('Озвучка недоступна. Выберите ответ.');
+      speechTimeout = setTimeout(() => startTimer('Озвучка прервана. Выберите ответ.'), Math.max(12000, spoken.length * 160));
+      synth.speak(utterance);
+    }
+
+    function finishQuestion(position) {
+      if (phase !== 'answer') return;
+      if (performance.now() >= deadline) {
+        position = -1;
+        updateClock(0);
+      }
+      stopRound();
+      const focusWasOnAnswer = answers.contains(document.activeElement);
+      setPhase('review');
+      const item = questions[index];
+      const correct = position === item.correct;
+      if (correct) score += 1;
+      renderStakes();
+      roundEnded = !correct || score === roundLength;
+      root.querySelectorAll('.answer').forEach((button, number) => {
+        button.disabled = true;
+        if (number === item.correct || number === position) {
+          const isCorrect = number === item.correct;
+          button.classList.add(isCorrect ? 'correct' : 'wrong');
+          button.querySelector('.answer-mark').textContent = isCorrect ? '✓' : '×';
+        }
+      });
+      status.dataset.outcome = correct ? 'success' : 'error';
+      status.textContent = correct ? 'Верно!' : (position === -1 ? 'Время вышло. ' : 'Неверно. ')
+        + 'Правильный ответ — ' + item.answers[item.correct] + '.';
+      action.hidden = false;
+      action.textContent = roundEnded ? 'Показать результат' : 'Дальше';
+      bank.hidden = roundEnded;
+      bank.textContent = 'Забрать ' + formatPrize.format(prizes[score - 1] ?? 0);
+      if (focusWasOnAnswer) action.focus({ preventScroll: true });
+      if (position !== -1) telegram?.HapticFeedback?.notificationOccurred(correct ? 'success' : 'error');
+    }
+
+    function showResult(prize) {
+      setPhase('done');
+      counter.textContent = 'Ваш выигрыш';
+      clockRow.hidden = true;
+      find('round-tools').hidden = true;
+      hint.textContent = '';
+      question.textContent = formatPrize.format(prize);
+      answers.replaceChildren();
+      status.textContent = 'Верных ответов: ' + score + ' из ' + roundLength;
+      action.textContent = 'Играть ещё';
+      question.focus({ preventScroll: true });
+    }
+
+    find('show-ladder').addEventListener('click', showLadder);
+    find('close-ladder').addEventListener('click', () => ladderDialog.close());
+    hintButtons.forEach((button) => button.addEventListener('click', () => useHint(button.dataset.hint)));
+    bank.addEventListener('click', () => {
+      if (phase === 'review' && !roundEnded) showResult(prizes[score - 1]);
+    });
+    action.addEventListener('click', () => {
+      if (phase === 'ready') playQuestion();
+      else if (phase === 'speaking') startTimer();
+      else if (phase === 'review') {
+        if (roundEnded) {
+          showResult(score === roundLength ? prizes[score - 1] : guaranteedPrize());
+        } else {
+          index += 1;
+          playQuestion();
+        }
+      } else if (phase === 'done') showReady();
+    });
+
+    function openQuestion(position) {
+      editing = position;
+      const item = questions[position];
+      form.elements.question.value = item?.question ?? '';
+      letters.forEach((letter, number) => {
+        form.elements[letter.toLowerCase()].value = item?.answers[number] ?? '';
+      });
+      form.elements.correct.value = String(item?.correct ?? 0);
+      find('delete').hidden = position < 0;
+      editorStatus.textContent = '';
+      delete editorStatus.dataset.error;
+      questionPicker.replaceChildren(...questions.map((entry, number) =>
+        new Option((number + 1) + '. ' + entry.question, number)));
+      if (position < 0) {
+        const label = questions.length ? 'Новый вопрос' : 'Вопросов пока нет';
+        questionPicker.add(new Option(label, -1), 0);
+      }
+      questionPicker.disabled = questions.length === 0;
+      questionPicker.value = String(position);
+    }
+
+    function saveQuestions(message) {
+      let stored = false;
+      const serialized = JSON.stringify(questions);
+      try {
+        localStorage.setItem(storageKey, serialized);
+        stored = true;
+      } catch { /* Fall back to the preview host or in-memory state. */ }
+      editorStatus.textContent = stored ? message : message + ' Изменения доступны в открытом прототипе.';
+      if (window.openai?.setWidgetState && new TextEncoder().encode(serialized).length < 15000) {
+        window.openai.setWidgetState({ privateContent: { questions } }).then(() => {
+          if (editorStatus.textContent.startsWith(message)) editorStatus.textContent = message;
+        }).catch(() => {});
+      }
+    }
+
+    function setEditorOpen(opening) {
+      stopRound();
+      editor.hidden = !opening;
+      game.hidden = opening;
+      counter.hidden = opening;
+      find('editor-title').hidden = !opening;
+      editButton.textContent = opening ? 'К игре' : 'Редактор';
+      if (opening) {
+        openQuestion(questions.length ? 0 : -1);
+        telegram?.BackButton?.show();
+      } else {
+        showReady();
+        telegram?.BackButton?.hide();
+      }
+      if (telegram) window.scrollTo(0, 0);
+    }
+
+    editButton.addEventListener('click', () => setEditorOpen(editor.hidden));
+    questionPicker.addEventListener('change', () => openQuestion(Number(questionPicker.value)));
+    find('add').addEventListener('click', () => {
+      openQuestion(-1);
+      form.elements.question.focus();
+    });
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const questionText = form.elements.question.value.trim();
+      const answers = letters.map((letter) => form.elements[letter.toLowerCase()].value.trim());
+      if (!questionText || answers.some((answer) => !answer)) {
+        editorStatus.dataset.error = '';
+        editorStatus.textContent = 'Заполните вопрос и все четыре варианта.';
+        return;
+      }
+      const position = editing < 0 ? questions.length : editing;
+      questions[position] = { question: questionText, answers, correct: Number(form.elements.correct.value) };
+      openQuestion(position);
+      saveQuestions('Вопрос сохранён.');
+    });
+    find('delete').addEventListener('click', () => {
+      questions.splice(editing, 1);
+      openQuestion(Math.min(editing, questions.length - 1));
+      saveQuestions('Вопрос удалён.');
+    });
+    window.addEventListener('openai:set_globals', (event) => {
+      const saved = event.detail?.globals?.widgetState?.privateContent?.questions;
+      if (!Array.isArray(saved) || phase !== 'ready' || !editor.hidden) return;
+      questions = saved;
+      showReady();
+    });
+
+    applyTheme();
+    systemTheme.addEventListener?.('change', applyTheme);
+    window.addEventListener('quiz:telegram-ready', connectTelegram, { once: true });
+    showReady();
+    connectTelegram();
+  })();
+</script>
+<!-- preview:end -->
+<script>
+  (() => {
+    if (!/^https?:$/.test(location.protocol) || window.Telegram?.WebApp) return;
+    const hasLaunchData = (params) => params.has('tgWebAppData') || params.has('tgWebAppVersion');
+    const hash = location.hash.slice(1).split('?').pop();
+    if (!hasLaunchData(new URLSearchParams(hash)) && !hasLaunchData(new URLSearchParams(location.search))) return;
+    const sdk = document.createElement('script');
+    sdk.src = 'https://telegram.org/js/telegram-web-app.js?64';
+    sdk.onload = () => window.dispatchEvent(new Event('quiz:telegram-ready'));
+    document.head.append(sdk);
+  })();
+</script>
+</html>
