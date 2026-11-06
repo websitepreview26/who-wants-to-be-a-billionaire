@@ -179,8 +179,6 @@
     #quiz-stage .answer[data-removed] .answer-text { visibility: hidden; }
     #quiz-stage .answer[data-removed] { background: var(--stage); }
     #quiz-stage .answer:not(:disabled):active { background: var(--soft); }
-    #quiz-stage button.answer.correct { color: var(--positive); background: var(--positive-soft); }
-    #quiz-stage button.answer.wrong { color: var(--signal); background: var(--signal-soft); }
     #quiz-stage .answer:is(.correct, .wrong) .letter { color: inherit; }
     #quiz-stage .controls {
       display: grid;
@@ -369,7 +367,7 @@
       #quiz-stage .answer { transition: background-color 130ms ease, color 130ms ease; }
     }
   </style>
-  <link rel="stylesheet" href="assets/show.css">
+  <link rel="stylesheet" href="assets/show.css?v=2">
 
   <div class="shell">
     <header>

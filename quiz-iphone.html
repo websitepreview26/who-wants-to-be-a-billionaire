@@ -273,8 +273,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     #quiz-stage .answer[data-removed] .answer-text { visibility: hidden; }
     #quiz-stage .answer[data-removed] { background: var(--stage); }
     #quiz-stage .answer:not(:disabled):active { background: var(--soft); }
-    #quiz-stage button.answer.correct { color: var(--positive); background: var(--positive-soft); }
-    #quiz-stage button.answer.wrong { color: var(--signal); background: var(--signal-soft); }
     #quiz-stage .answer:is(.correct, .wrong) .letter { color: inherit; }
     #quiz-stage .controls {
       display: grid;
@@ -480,9 +478,7 @@ body { margin: 0; }
   --soft: #1d2d62;
   --gold: #ffcb73;
   --signal: #ffb0ac;
-  --signal-soft: #681d3a;
   --positive: #b4f3ce;
-  --positive-soft: #0d513e;
   --action: #ffce79;
   --action-text: #271306;
   --play-action-line: #ffdc94;
@@ -732,20 +728,42 @@ body { margin: 0; }
 }
 @media (max-width: 559px) {
   #quiz-stage .shell { --gutter: 12px; }
-  #quiz-stage header { min-height: 56px; margin-bottom: 10px; gap: 6px; }
+  #quiz-stage .shell:has(.stage:not([hidden])) {
+    padding-top: calc(8px + max(20px, var(--safe-top)));
+    padding-bottom: calc(16px + max(56px, var(--safe-bottom)));
+  }
+  #quiz-stage[data-telegram] .shell:has(.stage:not([hidden])) {
+    padding-top: calc(8px + var(--safe-top));
+    padding-bottom: calc(16px + var(--safe-bottom));
+  }
+  #quiz-stage header { min-height: 54px; margin-bottom: 8px; gap: 6px; }
   #quiz-stage .brand-name { font-size: .73rem; }
   #quiz-stage .brand svg { width: 28px; height: 28px; }
   #quiz-stage .brand { gap: 7px; }
   #quiz-stage .brand-type { font-size: .54rem; }
   #quiz-stage header button { padding-inline: 9px; font-size: .71rem; }
   #quiz-stage .studio { border-radius: 13px; }
-  #quiz-stage .question { --cut: 23px; }
+  #quiz-stage:is([data-phase="speaking"], [data-phase="answer"], [data-phase="review"]) .studio {
+    min-height: 125px;
+    padding: 20px 0 4px;
+  }
+  #quiz-stage:is([data-phase="speaking"], [data-phase="answer"], [data-phase="review"]) .seal {
+    width: clamp(102px, 27vw, 130px);
+  }
+  #quiz-stage:is([data-phase="speaking"], [data-phase="answer"], [data-phase="review"]) .seal-title span {
+    font-size: 5.4cqi;
+  }
+  #quiz-stage .round-tools { margin-top: 6px; }
+  #quiz-stage .clock-row { margin-bottom: 7px; }
+  #quiz-stage .game-sidebar { margin-bottom: 7px; }
+  #quiz-stage .question { --cut: 23px; min-height: 74px; }
   #quiz-stage .round-label { gap: 2px 8px; }
   #quiz-stage .round-tools p { font-size: .65rem; }
-  #quiz-stage button.answer { --cut: 12px; gap: 5px; padding-inline: 13px; }
+  #quiz-stage button.answer { --cut: 12px; gap: 5px; min-block-size: 48px; padding-inline: 13px; }
   #quiz-stage .answer .letter::before { content: none; }
   #quiz-stage .answer-text { font-size: .87rem; }
-  #quiz-stage .controls { gap: 5px; }
+  #quiz-stage .controls { gap: 5px; margin-top: 10px; }
+  #quiz-stage .controls button { scroll-margin-block-end: 72px; }
   #quiz-stage #quiz-show-ladder { font-size: .71rem; }
 }
 </style>
