@@ -2,11 +2,9 @@
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Викторина</title>
-<style>
-  body { margin: 0; background: #f8f6f1; }
-  body:has(#quiz-stage[data-theme="dark"]) { background: #1d1f1c; }
-</style>
+<title>Кто хочет стать миллионером?</title>
+<meta name="theme-color" content="#080b21">
+<meta name="description" content="Кто хочет стать миллионером? Пятнадцать вопросов, три подсказки и путь к главному призу.">
 <!-- preview:start -->
 <div id="quiz-stage">
   <style>
@@ -27,46 +25,10 @@
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
     #quiz-stage {
-      --stage: #f8f6f1;
-      --field: #fefcf8;
-      --ink: #232521;
-      --muted: #62645c;
-      --line: #cdcdc3;
-      --soft: #eeece4;
-      --signal: #9b342e;
-      --signal-soft: #f6e5e1;
-      --positive: #235e46;
-      --positive-soft: #e1eee4;
-      --action: #272a25;
-      --action-text: #fcfaf4;
-      --play-action: #e8e5dd;
-      --play-action-text: #34352f;
-      --play-action-line: #d4cfc3;
-      --answer-radius: 10px;
-      color-scheme: light;
       color: var(--ink);
       font: 16px/1.45 Manrope, system-ui, sans-serif;
       overflow-wrap: anywhere;
     }
-    #quiz-stage[data-theme="dark"] {
-      --stage: #1d1f1c;
-      --field: #242622;
-      --ink: #f4f1e8;
-      --muted: #b7b9ad;
-      --line: #50534a;
-      --soft: #30332c;
-      --signal: #ffa398;
-      --signal-soft: #482c28;
-      --positive: #a6d6b7;
-      --positive-soft: #263e32;
-      --action: #efece1;
-      --action-text: #22241f;
-      --play-action: #34362f;
-      --play-action-text: #e9e6dc;
-      --play-action-line: #4e5047;
-      color-scheme: dark;
-    }
-
     #quiz-stage * { box-sizing: border-box; }
     #quiz-stage [hidden] { display: none !important; }
     #quiz-stage :is(h1, h2, p) { margin: 0; font-family: inherit; }
@@ -398,15 +360,6 @@
       #quiz-stage .live-ladder h2 { padding-inline: 8px; margin-bottom: 4px; font-size: .8125rem; }
       #quiz-stage #quiz-show-ladder { display: none; }
     }
-    @media (max-width: 559px) and (orientation: portrait) {
-      #quiz-stage[data-telegram] .shell:has(.stage:not([hidden])) {
-        display: flex;
-        flex-direction: column;
-        min-block-size: var(--tg-viewport-stable-height, 100dvh);
-      }
-      #quiz-stage[data-telegram] .stage:not([hidden]) { display: flex; flex: 1; flex-direction: column; }
-      #quiz-stage[data-telegram] .question { display: grid; align-content: center; flex: 1; }
-    }
     @media (hover: hover) {
       #quiz-stage .answer:not(:disabled):hover { background: var(--soft); }
       #quiz-stage :is(header button, .quiet):hover { color: var(--ink); }
@@ -416,18 +369,104 @@
       #quiz-stage .answer { transition: background-color 130ms ease, color 130ms ease; }
     }
   </style>
+  <link rel="stylesheet" href="assets/show.css">
 
   <div class="shell">
     <header>
-      <p class="eyebrow" id="quiz-counter"></p>
+      <div class="brand">
+        <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="18.5" stroke="currentColor"/>
+          <circle cx="20" cy="20" r="14" stroke="currentColor" opacity=".55"/>
+          <path d="M20 7c1.6 8.1 4.9 11.4 13 13-8.1 1.6-11.4 4.9-13 13-1.6-8.1-4.9-11.4-13-13 8.1-1.6 11.4-4.9 13-13Z" stroke="currentColor"/>
+          <circle cx="20" cy="20" r="2" fill="currentColor"/>
+        </svg>
+        <div>
+          <p class="brand-name">Кто хочет стать миллионером?</p>
+          <p class="brand-type">Интеллектуальная игра</p>
+        </div>
+      </div>
       <h2 id="quiz-editor-title" hidden>Вопросы</h2>
       <button id="quiz-edit" type="button">Редактор</button>
     </header>
 
     <main class="stage" id="quiz-game">
+      <div class="studio">
+        <svg class="studio-art" viewBox="0 0 1000 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="studio-blue" x1="0" x2="1" y1="0" y2="1">
+              <stop stop-color="#597cff" stop-opacity=".64"/><stop offset="1" stop-color="#75b5ff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="studio-violet" x1="1" x2="0" y1="0" y2="1">
+              <stop stop-color="#a278ff" stop-opacity=".72"/><stop offset="1" stop-color="#a278ff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="studio-floor" x2="0" y2="1">
+              <stop stop-color="#6973e9" stop-opacity=".82"/><stop offset="1" stop-color="#21328c" stop-opacity=".04"/>
+            </linearGradient>
+            <radialGradient id="studio-pool">
+              <stop stop-color="#a67eff" stop-opacity=".45"/><stop offset="1" stop-color="#366afa" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="studio-blur"><feGaussianBlur stdDeviation="8"/></filter>
+            <g id="studio-left">
+              <path d="M-70 188Q110 126 320 203M-70 209Q111 148 326 219M-70 232Q113 175 335 238" fill="none" stroke="#394fba" stroke-opacity=".44"/>
+              <path d="M-55 175Q110 114 309 186M-55 255Q110 193 335 253" fill="none" stroke="#6856b3" stroke-opacity=".48"/>
+              <g fill="#6979db">
+                <path d="M24 153h4v2h-4zm34-9h3v2h-3zm29-5h3v2h-3zm26-1h4v2h-4zm25 0h3v2h-3zm32 4h4v2h-4zm25 4h4v2h-4zm29 6h4v2h-4zm29 7h4v2h-4zm31 9h4v2h-4z"/>
+                <path d="M17 204h3v2h-3zm35-8h4v2h-4zm29-4h4v2h-4zm29-1h4v2h-4zm30 1h3v2h-3zm31 3h4v2h-4zm31 4h4v2h-4zm31 6h4v2h-4zm29 7h4v2h-4zm27 8h4v2h-4z" opacity=".64"/>
+              </g>
+            </g>
+          </defs>
+          <ellipse cx="500" cy="280" rx="460" ry="100" fill="url(#studio-pool)"/>
+          <path d="M95 0h23l294 280-121 13zm120 0h17l230 264-67 12z" fill="url(#studio-blue)" filter="url(#studio-blur)"/>
+          <path d="M905 0h-23L588 280l121 13zM785 0h-17L538 264l67 12z" fill="url(#studio-violet)" filter="url(#studio-blur)"/>
+          <path d="M106 0 351 267M222 0l205 257" stroke="url(#studio-blue)" stroke-width="2"/>
+          <path d="M894 0 649 267M778 0 573 257" stroke="url(#studio-violet)" stroke-width="2"/>
+          <use href="#studio-left"/>
+          <use href="#studio-left" transform="translate(1000 0) scale(-1 1)"/>
+          <g fill="none" stroke="url(#studio-floor)">
+            <ellipse cx="500" cy="272" rx="148" ry="21" stroke-width="2"/>
+            <ellipse cx="500" cy="276" rx="224" ry="34"/>
+            <ellipse cx="500" cy="287" rx="323" ry="54"/>
+            <ellipse cx="500" cy="305" rx="448" ry="79"/>
+            <path d="M500 257 126 360m374-103L314 360m186-103v103m0-103 186 103m-186-103 374 103" opacity=".4"/>
+          </g>
+        </svg>
+        <p class="studio-note eyebrow" id="quiz-studio-note">Главный приз · 3 000 000 ₽</p>
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 300 300" fill="none">
+            <defs>
+              <linearGradient id="seal-metal" x2="1" y2="1">
+                <stop stop-color="#ffecb9"/><stop offset=".28" stop-color="#775f9a"/><stop offset=".53" stop-color="#d6c2ff"/><stop offset=".76" stop-color="#9273b3"/><stop offset="1" stop-color="#ffdb8d"/>
+              </linearGradient>
+              <radialGradient id="seal-fill">
+                <stop stop-color="#241743"/><stop offset=".68" stop-color="#1c224f"/><stop offset="1" stop-color="#090d28"/>
+              </radialGradient>
+              <path id="seal-petal" d="M150 146Q100 92 150 24q50 68 0 122Z"/>
+              <g id="seal-four">
+                <use href="#seal-petal"/><use href="#seal-petal" transform="rotate(90 150 150)"/>
+                <use href="#seal-petal" transform="rotate(180 150 150)"/><use href="#seal-petal" transform="rotate(270 150 150)"/>
+              </g>
+            </defs>
+            <circle cx="150" cy="150" r="147" fill="#080c26" stroke="#a3aafa" stroke-opacity=".72"/>
+            <circle cx="150" cy="150" r="141" fill="url(#seal-fill)" stroke="url(#seal-metal)" stroke-width="2"/>
+            <circle cx="150" cy="150" r="132" stroke="#8f89dc" stroke-dasharray="2 4"/>
+            <circle cx="150" cy="150" r="126" stroke="url(#seal-metal)" stroke-opacity=".65"/>
+            <g stroke="#ab91fc" stroke-opacity=".56">
+              <use href="#seal-four"/><use href="#seal-four" transform="rotate(22.5 150 150)"/>
+              <use href="#seal-four" transform="rotate(45 150 150)"/><use href="#seal-four" transform="rotate(67.5 150 150)"/>
+            </g>
+            <path d="m150 54 3.5 9.5 9.5 3.5-9.5 3.5L150 80l-3.5-9.5L137 67l9.5-3.5Zm0 166 3.5 9.5 9.5 3.5-9.5 3.5-3.5 9.5-3.5-9.5-9.5-3.5 9.5-3.5Z" fill="#ffe1a3"/>
+            <path d="M37 111h226l27 39-27 39H37l-27-39Z" fill="url(#seal-fill)" stroke="url(#seal-metal)" stroke-width="1.6"/>
+            <path d="M44 117h212m-212 66h212" stroke="#8d80c6" stroke-opacity=".6"/>
+          </svg>
+          <p class="seal-title"><span>Кто хочет стать</span><strong>миллионером?</strong></p>
+        </div>
+      </div>
       <div class="round-tools" id="quiz-round-tools" hidden>
-        <p id="quiz-stakes"></p>
-        <button class="quiet" id="quiz-show-ladder" type="button">Все суммы</button>
+        <div class="round-label">
+          <p class="eyebrow" id="quiz-counter"></p>
+          <p id="quiz-stakes"></p>
+        </div>
+        <button class="quiet" id="quiz-show-ladder" type="button">Лестница</button>
       </div>
       <div class="clock-row" id="quiz-clock">
         <div class="clock-track">
@@ -435,28 +474,33 @@
         </div>
         <span class="time" id="quiz-time" role="timer" aria-label="Оставшееся время">1:00</span>
       </div>
-      <div class="question"><h1 id="quiz-question" tabindex="-1"></h1></div>
-      <div class="answers" id="quiz-answers"></div>
       <aside class="game-sidebar" id="quiz-sidebar" aria-label="Подсказки и суммы за ответы" hidden>
+        <div class="live-ladder ladder-top">
+          <h2 class="eyebrow" id="quiz-live-ladder-title">Лестница выигрышей</h2>
+          <strong id="quiz-top-prize">3 000 000 ₽</strong>
+        </div>
         <div class="lifelines" id="quiz-lifelines" aria-label="Подсказки" role="group">
-          <button type="button" data-hint="half">
+          <button type="button" data-hint="half" aria-label="50 на 50" title="50 на 50">
             <span>50:50</span>
-            <small>Убирает два неверных ответа</small>
           </button>
-          <button type="button" data-hint="audience">
-            <span>Помощь зала</span>
-            <small>Виртуальное голосование в процентах</small>
+          <button type="button" data-hint="audience" aria-label="Помощь зала" title="Помощь зала">
+            <svg viewBox="0 0 24 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="5" r="2.5"/><circle cx="4.5" cy="8" r="2"/><circle cx="19.5" cy="8" r="2"/>
+              <path d="M7.5 17v-2a4.5 4.5 0 0 1 9 0v2m-15-1v-1a3 3 0 0 1 4.5-2.6m16.5 3.6v-1a3 3 0 0 0-4.5-2.6"/>
+            </svg>
           </button>
-          <button type="button" data-hint="friend">
-            <span>Звонок другу</span>
-            <small>Совет виртуального друга</small>
+          <button type="button" data-hint="friend" aria-label="Звонок другу" title="Звонок другу">
+            <svg viewBox="0 0 24 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">
+              <path d="M7 2 4 4c-2 2 .6 6.8 4.1 10.2 3.4 3.2 8 5.1 9.7 3.2l2.3-2.8-4.5-3-2.2 2.1c-2.3-1-4.1-2.8-5.1-5l1.8-2.3L7 2Z"/>
+            </svg>
           </button>
         </div>
         <div class="live-ladder">
-          <h2 id="quiz-live-ladder-title">Сколько можно выиграть</h2>
           <ol class="ladder" id="quiz-live-ladder" aria-labelledby="quiz-live-ladder-title" reversed></ol>
         </div>
       </aside>
+      <div class="question"><h1 id="quiz-question" tabindex="-1"></h1></div>
+      <div class="answers" id="quiz-answers"></div>
       <p id="quiz-hint" role="status"></p>
       <div class="controls">
         <p id="quiz-status" role="status"></p>
@@ -468,7 +512,7 @@
 
     <dialog id="quiz-ladder-dialog" aria-labelledby="quiz-ladder-title">
       <div class="ladder-head">
-        <h2 id="quiz-ladder-title">Сколько можно выиграть</h2>
+        <h2 id="quiz-ladder-title">Лестница выигрышей</h2>
         <button id="quiz-close-ladder" class="quiet" type="button">Закрыть</button>
       </div>
       <ol class="ladder" id="quiz-ladder" reversed></ol>
@@ -579,7 +623,6 @@
     let speechTimeout;
     let utterance;
     let telegram;
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 
     function setPhase(next) {
       phase = next;
@@ -605,8 +648,8 @@
 
     function renderStakes() {
       const guaranteed = guaranteedPrize();
-      const stake = 'Вопрос на ' + formatPrize.format(prizes[index]);
-      find('stakes').textContent = guaranteed ? stake + ' · Уже гарантировано ' + formatPrize.format(guaranteed) : stake;
+      const stake = formatPrize.format(prizes[index]) + ' ₽';
+      find('stakes').textContent = guaranteed ? stake + ' · Несгораемая: ' + formatPrize.format(guaranteed) + ' ₽' : stake;
       renderLadder(find('live-ladder'));
     }
 
@@ -619,8 +662,9 @@
         const amount = document.createElement('span');
         label.textContent = String(level);
         marker.textContent = checkpoints.includes(level) ? 'Несгораемая' : '';
+        row.toggleAttribute('data-milestone', level === roundLength || checkpoints.includes(level));
         row.toggleAttribute('data-secured', checkpoints.includes(level) && level <= score);
-        amount.textContent = formatPrize.format(prize);
+        amount.textContent = formatPrize.format(prize) + ' ₽';
         if (position === index) row.setAttribute('aria-current', 'step');
         row.append(label, marker, amount);
         return row;
@@ -666,7 +710,6 @@
     }
 
     function applyTheme() {
-      root.dataset.theme = telegram?.colorScheme ?? (systemTheme.matches ? 'dark' : 'light');
       if (!telegram) return;
       const background = getComputedStyle(root).getPropertyValue('--stage').trim();
       telegram.setHeaderColor?.(telegram.isVersionAtLeast?.('6.9') ? background : 'bg_color');
@@ -753,7 +796,10 @@
       usedHints.clear();
       setPhase('ready');
       index = score = 0;
-      counter.textContent = 'Подготовка к игре';
+      const topPrize = roundLength ? formatPrize.format(prizes[roundLength - 1]) + ' ₽' : '';
+      find('studio-note').hidden = !roundLength;
+      find('studio-note').textContent = 'Главный приз · ' + topPrize;
+      find('top-prize').textContent = topPrize;
       clockRow.hidden = true;
       find('round-tools').hidden = true;
       hint.textContent = '';
@@ -763,7 +809,7 @@
       action.disabled = roundLength === 0;
       action.textContent = 'Начать игру';
       find('voice-option').hidden = voice.disabled || !roundLength;
-      status.textContent = roundLength ? 'Вопросов: ' + roundLength + ' · Подсказок: 3' : 'Откройте редактор, чтобы начать.';
+      status.textContent = roundLength ? 'Вопросов: ' + roundLength + ' · Три подсказки' : 'Откройте редактор, чтобы начать.';
     }
 
     function startTimer(message = 'Выберите один ответ') {
@@ -839,18 +885,18 @@
       action.hidden = false;
       action.textContent = roundEnded ? 'Показать результат' : 'Дальше';
       bank.hidden = roundEnded;
-      bank.textContent = 'Забрать ' + formatPrize.format(prizes[score - 1] ?? 0);
+      bank.textContent = 'Забрать ' + formatPrize.format(prizes[score - 1] ?? 0) + ' ₽';
       if (focusWasOnAnswer) action.focus({ preventScroll: true });
       if (position !== -1) telegram?.HapticFeedback?.notificationOccurred(correct ? 'success' : 'error');
     }
 
     function showResult(prize) {
       setPhase('done');
-      counter.textContent = 'Ваш выигрыш';
+      find('studio-note').textContent = 'Ваш выигрыш';
       clockRow.hidden = true;
       find('round-tools').hidden = true;
       hint.textContent = '';
-      question.textContent = formatPrize.format(prize);
+      question.textContent = formatPrize.format(prize) + ' ₽';
       answers.replaceChildren();
       status.textContent = 'Верных ответов: ' + score + ' из ' + roundLength;
       action.textContent = 'Играть ещё';
@@ -916,7 +962,6 @@
       stopRound();
       editor.hidden = !opening;
       game.hidden = opening;
-      counter.hidden = opening;
       find('editor-title').hidden = !opening;
       editButton.textContent = opening ? 'К игре' : 'Редактор';
       if (opening) {
@@ -961,8 +1006,6 @@
       showReady();
     });
 
-    applyTheme();
-    systemTheme.addEventListener?.('change', applyTheme);
     window.addEventListener('quiz:telegram-ready', connectTelegram, { once: true });
     showReady();
     connectTelegram();
